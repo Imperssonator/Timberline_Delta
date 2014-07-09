@@ -4,7 +4,7 @@ sample = ceil(randn(10000,1).*SD+DPavg);
 %disp(length(sample))
 
 table = tabulate(sample);                   % [DP, count, mol frac]
-out = table(table(:,2)~=0,:);
+out = table(table(:,2)~=0 & table(:,1)>0,:);
 
 DPn = Mn(sample);
 DPw = Mw(sample);

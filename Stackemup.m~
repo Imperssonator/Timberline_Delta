@@ -12,7 +12,7 @@ function out = Stackemup(DPdist)
 % and assumes the chains follow a normal distribution, which is usually not
 % the case
 
-pi_length = 1000;           % how many chains will we stack
+pi_length = 500;           % how many chains will we stack
 DPindices = discretesample(DPdist(:,3),pi_length)';  % samples the DP distribution and returns a vector of the indices of which DPs are each new chain
 
 Stack = initiate_stack(DPindices,DPdist);     % stack up the first two polymers
@@ -22,6 +22,7 @@ for i = 3:pi_length
 end
 
 out = Stack;
+stackplot(Stack)
 
 end
 
@@ -82,4 +83,6 @@ overlap = [max(front(1),support(1)), min(front(2),support(2))]; % find overlap o
 hitstack = randi(overlap(2)-overlap(1)+1)+overlap(1)-1; % where does new chain hit stack
 hitchain = randi(DP);                                      % which monomer of new chain hits stack
 
-out = [ , hitstack+DP-hitchain]
+out = [hitstack-hitchain+1, hitstack+DP-hitchain];
+
+end

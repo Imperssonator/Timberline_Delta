@@ -22,6 +22,7 @@ for i = 3:pi_length
 end
 
 out = Stack;
+stackplot(Stack)
 
 end
 
@@ -85,4 +86,3 @@ hitchain = randi(DP);                                      % which monomer of ne
 out = [hitstack-hitchain+1, hitstack+DP-hitchain];
 
 end
-
