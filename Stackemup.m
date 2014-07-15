@@ -12,7 +12,7 @@ function out = Stackemup(DPdist)
 % and assumes the chains follow a normal distribution, which is usually not
 % the case
 
-pi_length = 100;           % how many chains will we stack
+pi_length = 500;           % how many chains will we stack
 DPindices = discretesample(DPdist(:,3),pi_length)';  % samples the DP distribution and returns a vector of the indices of which DPs are each new chain
 
 Stack = initiate_stack(DPindices,DPdist);     % stack up the first two polymers

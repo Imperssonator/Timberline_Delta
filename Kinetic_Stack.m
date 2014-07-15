@@ -12,10 +12,10 @@ function out = Kinetic_Stack(DPdist)
 % the case
 
 global DPs T kb
-T = 323;
+T = 298;
 kb = 1.38E-23;
 DPs = DPdist;
-pi_length = 500;           % how many chains will we stack
+pi_length = 2600;           % how many chains will we stack
 
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
 [n m] = size(Stack);
@@ -183,11 +183,11 @@ out = d0*exp(-overlap*Eov/(kb*T));
 end
 
 function out = intrinsic_detach()
-out = 10;
+out = 2E11;
 end
 
 function out = overlap_E()
-out = 1E-22;
+out = 3E-22;
 end
 
 
