@@ -1,4 +1,4 @@
-function [coord, bonds, type] = generate_coordinates(micstruct)
+function [coord, bonds, type] = generate_coordinates(micstruct,pw,ph)
 clc
 % This function generates the xy coordinates of all the monomers present,
 % list of which monomers are bonded to which and how
