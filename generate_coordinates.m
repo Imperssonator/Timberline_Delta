@@ -1,4 +1,4 @@
-function [pixelCoord, xyFiberSpace, monList, bonds, type] = generate_coordinates(micstruct,pw,ph)
+function [XY, bonds, type] = generate_coordinates(MS,pw,ph)
 clc
 % This function generates the xy coordinates of all the monomers present,
 % list of which monomers are bonded to which and how
@@ -11,22 +11,23 @@ piStackDistance = 0.37;     % Distance between two pi stacks in units of real sp
 monLength = 0.37;           % Length along a chain that a single monomer occupies (also 3.7 A)
 
 %% Variable Initializations
-[m, n] = size(micstruct);
+[m, n] = size(MS);
 coord = [];
 pixelCoord = [];            % Pixel Coord will store both the x and y cooridnates in real space and the indices of the pixel in the original image
 xyFiberSpace = [];                            
 % Fiber space is where the axis has been rotated by the angle in which the pi-stack is growing
 % xyfiberspace gives the x & y coordinated in the rotated plane
 bonds = [];
-monList = [];               % Monomer List will store the real x-y coordinates of each monomer
+MonList = [];               % Monomer List will store the real x-y coordinates of each monomer
 type = [];
+ChainList = [];             % keep track of the length of each chain we form
 
 %% Conversion to Fiber Space relative to image origin
 for i = 1:m
     for j = 1:n
         xyReal = [pw*j ph*-i];                % gives coordinates in space based on position in matrix
-        if micstruct(i,j) ~= -180
-            theta = micstruct(i,j);           % gives the angle with which axis should be rotated
+        if MS(i,j) ~= -180
+            theta = MS(i,j);           % gives the angle with which axis should be rotated
                                               % needs to be modified when we're dealing with more
                                               % than one angle
             rad = (theta/180)*pi;             % assuming the given angle is in degrees
@@ -41,57 +42,64 @@ end
 [StackStart, StartPix] = min(xyFiberSpace(:,1));            % Return the Fiber space image origin coordinate of the starting pixel and which pixel it is
 [StackEnd, EndPix] = max(xyFiberSpace(:,1));                % same for end
 L = StackEnd-StackStart;                                    % Length of the pi stack
-stackLength = floor(L/piStackDistance)+1;                   % Number of chains in the stack rounded down
+stackLength = floor(L/piStackDistance)+1;                   % Number of chains in the stack rounded down, +1 for the beginning
 
 %% Monomer Placement
 
-StartPixReal = pixelCoord(StartPix,1:2);
-monList = [monList; [StartPixReal]];
-ChainCenter = StartPixReal;
+ChainCenter = xyFiberSpace(StartPix,:);                     % Initialize the Chain center as the fiber space coordinate at the start of the stack
+
 for i = 1:stackLength
-    inFiber = 0;
-    dir = 1;
-    xCheck = 0;
-    while not(inFiber)
-        if IsInFiber(ChainCenter+[0 xCheck],rad,micstruct,pw,ph)
-            ChainCenter = ChainCenter+[0 xCheck];
-            monList = [monList; ChainCenter];
-            break
-        end
-        if sign(xCheck)==1
-            xCheck = xCheck*-1;
+    
+    MonList = [MonList; ChainCenter];
+    inFiber = 1;
+    prevPt = ChainCenter;                                   % previous point was the chain center
+    MonListStart = size(MonList,1);                         % this keeps track of where in the MonList we started the current chain we're growing
+    
+    %% Add up
+    while inFiber
+        currPt = prevPt + [0 monLength];
+        if not(IsInFiber(currPt,rad,MS,pw,ph))
+            inFiber = 0;
         else
-            xCheck = xCheck*-1 + monLength;
+            MonList = [MonList; currPt];
+            prevPt = currPt;
         end
     end
     
-    for dir = [1 -1];
-        
-        firstPlace = 1;
-        inFiber = 1;
-        
-        while inFiber
-            
-            if firstPlace == 1
-                prevPt = ChainCenter;
-                firstPlace = 0;
-            else
-                prevPt = monList(end,:);
-            end
-            currPt = prevPt + [0 dir*monLength];
-            if not(IsInFiber(currPt,rad,micstruct,pw,ph))
-                inFiber = 0;
-            else
-                monList = [monList; currPt];
-            end
+    %% Add down
+    prevPt = ChainCenter;
+    inFiber = 1;
+    while inFiber
+        currPt = prevPt + [0 -monLength];
+        if not(IsInFiber(currPt,rad,MS,pw,ph))
+            inFiber = 0;
+        else
+            MonList = [MonList; currPt];
+            prevPt = currPt;
         end
-        
     end
     
-    ChainCenter = ChainCenter + [piStackDistance 0];
-    
+    %% Find new center for next chain
+    ChainLen = size(MonList,1)-MonListStart;                                % Figure out how long the chain we just made is
+    ChainList = [ChainList; ChainLen];                                      % Add it to the chain list, which keeps track of the chain lengths (for use in MW Distribution later...)
+    for i = MonListStart:size(MonList,1)                                    
+        if IsInFiber(MonList(i,:)+[piStackDistance 0],rad,MS,pw,ph)         % If the position one pi stack distance away from any monomer on the last chain we added is in the crystal...
+            ChainCenter = MonList(i,:)+[piStackDistance 0];                 % just start the next chain there
+            break
+        elseif i == size(MonList,1)
+            inFiber = 0;                                                    % If we check the whole chain and there's nowhere to go, then we're at the end of the fiber
+        end
+    end
 end
-    
+
+%% Convert MonList back to real space
+XY = zeros(size(MonList));
+for i = 1:size(MonList,1)
+    XY(i,:) = fs2real(MonList(i,:),rad);
+end
+
+%% Extra code for forming bonds later
+
 %     
 %     
 %         % Go down
@@ -145,12 +153,20 @@ end
 
 end 
 
-function out = IsInFiber(FSpt,rad,micstruct,pw,ph)
+function out = IsInFiber(FSpt,rad,MS,pw,ph)
+%% IsInFiber
+% Checks if a point in fiber space is actually within the pixels of a fiber
+% in real space
 
 RSpt = fs2real(FSpt,rad);
-pixel_space = RSpt./[pw ph];
+% disp(RSpt)
+pixel_space = fliplr(RSpt./[pw -ph]);   % 1st dimension of pixel space is the negative y-axis of real space...
 pixel_ind = ceil(pixel_space);
-if micstruct(pixel_ind) == -180
+[m,n] = size(MS);
+
+if pixel_ind(1)<1 || pixel_ind(2)<1 || pixel_ind(1)>m || pixel_ind(2)>n
+    out = 0;
+elseif MS(pixel_ind(1), pixel_ind(2)) == -180
     out = 0;
 else
     out = 1;
@@ -158,23 +174,12 @@ end
 end
 
 function xyreal = fs2real(FSpt,rad)
+%% fs2real
+% converts fiber space coordinates to real coordinates... rotation
 
 xyreal = [0 0];
-xyreal(1) = FSpt(1)*cos(rad) + FSpt(2)*sin(rad);
-xyreal(2) = FSpt(1)*sin(rad) - FSpt(2)*cos(rad);
+xyreal(1) = FSpt(1)*cos(rad) - FSpt(2)*sin(rad);
+xyreal(2) = FSpt(1)*sin(rad) + FSpt(2)*cos(rad);
 
 end
-
-
-
-% function xyfs = real2fs(gridpt, rad)
-% 
-% out1 = [(gridpt(1)*cos(rad)+gridpt(2)*sin(rad)) (gridpt(2)*cos(rad)-gridpt(1)*sin(rad))]
-% out2 = [dot(gridpt,[cos(rad) sin(rad)]), dot(gridpt,[cos(rad-pi/2) sin(rad-pi/2)])]
-% 
-% xyfs = 0;
-% 
-% end
-% 
-
 

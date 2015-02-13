@@ -5,7 +5,9 @@ out1time = toc
 tic
 out2 = [dot(gridpt,[cos(rad) sin(rad)]), dot(gridpt,[cos(rad-pi/2) sin(rad-pi/2)])]
 out2time = toc
-
+tic
+out3 = [cos(rad) -sin(rad); sin(rad) cos(rad)]*gridpt'
+out3time = toc
 xyfs = 0;
 
 end
