@@ -32,51 +32,57 @@ for i = 1:bins
     Right_Side = max_x+1;
     
     % Equations for the lines of the box
-    X_bottomright = [Img_Corners_Rot(Bottom_Corner,1) Img_Corners_Rot(Right_Corner,1)];
-    Y_bottomright = [Img_Corners_Rot(Bottom_Corner,2) Img_Corners_Rot(Right_Corner,2)];
+    X_bottomright = [Img_Corners_Rot(Bottom_Corner,1) Img_Corner_Rot(Right_Corner,1)];
+    Y_bottomright = [Img_Corners_Rot(Bottom_Corner,2) Img_Corner_Rot(Right_Corner,2)];
     line_bottomright = polyfit(X_bottomright, Y_bottomright,1);
     
-    X_topright = [Img_Corners_Rot(Top_Corner,1) Img_Corners_Rot(Right_Corner,1)];
-    Y_topright = [Img_Corners_Rot(Top_Corner,2) Img_Corners_Rot(Right_Corner,2)];
+    X_topright = [Img_Corners_Rot(Top_Corner,1) Img_Corner_Rot(Right_Corner,1)];
+    Y_topright = [Img_Corners_Rot(Top_Corner,2) Img_Corner_Rot(Right_Corner,2)];
     line_topright = polyfit(X_topright, Y_topright,1);
     
-    X_topleft = [Img_Corners_Rot(Top_Corner,1) Img_Corners_Rot(Left_Corner,1)];
-    Y_topleft = [Img_Corners_Rot(Top_Corner,2) Img_Corners_Rot(Left_Corner,2)];
+    X_topleft = [Img_Corners_Rot(Top_Corner,1) Img_Corner_Rot(Left_Corner,1)];
+    Y_topleft = [Img_Corners_Rot(Top_Corner,2) Img_Corner_Rot(Left_Corner,2)];
     line_topleft = polyfit(X_topleft, Y_topleft,1);
     
-    X_bottomleft = [Img_Corners_Rot(Bottom_Corner,1) Img_Corners_Rot(Left_Corner,1)];
-    Y_bottomleft = [Img_Corners_Rot(Bottom_Corner,2) Img_Corners_Rot(Left_Corner,2)];
+    X_bottomleft = [Img_Corners_Rot(Bottom_Corner,1) Img_Corner_Rot(Left_Corner,1)];
+    Y_bottomleft = [Img_Corners_Rot(Bottom_Corner,2) Img_Corner_Rot(Left_Corner,2)];
     line_bottomleft = polyfit(X_bottomleft, Y_bottomleft,1);
     
     xbox = [Img_Corners_Rot(:,1)' Img_Corners_Rot(1,1)];
     ybox = [Img_Corners_Rot(:,2)' Img_Corners_Rot(1,2)];
     
-    Intersect = [Img_Corners_Rot(Bottom_Corner,:); Img_Corners_Rot(Top_Corner,:)];
+    Intersect = [Img_Corner_Rot(Bottom_Corner); Img_Corner_Rot(Top_Corner)];
     
     
     for y = min_y+lsy:lsy:max_y-lsy
         line_1 = [0 1 y]; % ax + by = c
         
         % Right intersection
-        if y<=Img_Corners_Rot(Right_Corner,2)
+        if y<=Img_Corner_Rot(Right_Corner,2)
             line_2 = [line_bottomright(1) -1 -1*line_bottomright(2)];
         else
             line_2 = [line_topright(1) -1 -1*line_topright(2)];
         end
         
         new_intersect1 = [line_1(1:2); line_2(1:2)]\[line_1(3);line_2(3)];
+        Intersect = [Intersect; new_intersect];
         
         % Left intersection
-        if y <= Img_Corners_Rot(Left_Corner,2)
+        if y <= Img_corner_Rot(Left_Corner,2)
             line_2 = [line_bottomleft(1) -1 -1*line_bottomleft(2)];
         else
             line_2 = [line_topleft(1) -1 -1*line_topleft(2)];
         end
         
-        new_intersect2 = [line_1(1:2); line_2(1:2)]\[line_1(3);line_2(3)];
-        Intersect = [Intersect; new_intersect1'; new_intersect2'];
+        new_intersect = [line_1(1:2); line_2(1:2)]\[line_1(3);line_2(3)];
         
-   end
+        
+        
+        
+        
+        % Some kind of code here that finds the intersection points
+        
+    end
     
     
 end
