@@ -120,8 +120,8 @@ for i = 1:1 % Right now just working on bin 1
         end
         %         checker = toc
     end
-    MonList = MonList(1:countm,:); % Remove tail-end zeros from preallocation
-    Edges = Straighten_List(Intersect, Bin_Angle); % unnecessary but need an output for 'Edges' 
+    MonList = MonList(1:countm,:); % Remove
+    Edges = Straighten_List(Intersect, Bin_Angle); % unnecessary 
     OuterMonList = [OuterMonList; MonList];
     whos OuterMonList  % whos checks the size and type of any variable
 end

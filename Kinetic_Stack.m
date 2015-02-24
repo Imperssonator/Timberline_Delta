@@ -15,7 +15,7 @@ global DPs T kb
 T = 298;
 kb = 1.38E-23;
 DPs = DPdist;
-pi_length = 2600;           % how many chains will we stack
+pi_length = 300;           % how many chains will we stack
 
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
 [n m] = size(Stack);
@@ -26,6 +26,7 @@ while n<pi_length
         Cuts = make_bins(Rates); % cuts is also [nx1] ranging from 0 to 1
         process = choose_process(rand,Cuts);
         Stack = perform_process(Stack,process);
+        disp(length(Stack))
     else
         Stack=initiate(Stack);
     end
@@ -183,11 +184,11 @@ out = d0*exp(-overlap*Eov/(kb*T));
 end
 
 function out = intrinsic_detach()
-out = 2E11;
+out = 8E11;
 end
 
 function out = overlap_E()
-out = 3E-22;
+out = 1.2E-21;
 end
 
 
