@@ -23,7 +23,7 @@ end
 MS = MS.*repmat(MAXCONF~=0,[1 1 bins+1]);
 MS(:,:,bins+1) = MAXCONF==0;
 
-Binfile = ['Tofet Files/', filepath(1:end-4), '_Bin'];
+Binfile = [Segpath(1:end-4), '_Bin'];
 
 save(Binfile,'MS','-v7.3')
 

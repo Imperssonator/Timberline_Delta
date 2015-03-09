@@ -52,7 +52,7 @@ for bin = 1:bins
         BinAngle = MSbin(find(MSbin,1))/180*pi; % The bin angle is stored at every pixel, so just find the first one
     end
     if isempty(BinAngle)
-        break
+        continue
     end
     
     %% Compute Scaling and Shifting Parameters
@@ -178,9 +178,7 @@ end
 
 %% Plot the points
 
-figure
-plot(XYZ(:,1),XYZ(:,2),'.b')
-axis equal
+LatPlot(XYZ,bins)
 
 end
 

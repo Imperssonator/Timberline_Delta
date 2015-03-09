@@ -16,13 +16,13 @@ lsx = 0.37; lsy = 0.37; lsa = 0.38;
 
 [XYZ, Edge] = Populate_Lattice(MS,pw,ph,lsx,lsy,lsa);
 
-Latfile = ['Tofet Files/', Imgpath(1:end-4), '_Lat'];
+Latfile = [Imgpath(1:end-4), '_Lat'];
 
 save(Latfile,'XYZ','Edge','-v7.3')
 
 ImSizenm = size*(2000/2160);
 
-[TofXY TofEdge] = AddEnergies(XYZ,Edge,ImSizenm);
+[TofXY TofEdge] = AddEnergies(XYZ,Edge,Imgpath,ImSizenm);
 
 
 end

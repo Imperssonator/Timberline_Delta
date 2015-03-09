@@ -105,7 +105,7 @@ for nn = 1:m
     end
 end
 
-SEGfile = ['Tofet Files/', filepath(1:end-4), '_Seg'];
+SEGfile = [filepath(1:end-4), '_Seg'];
 
 save(SEGfile,'ORIENT','MAXCONF','-v7.3')
 
