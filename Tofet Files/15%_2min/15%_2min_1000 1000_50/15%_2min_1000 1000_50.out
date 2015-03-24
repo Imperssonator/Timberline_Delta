@@ -1,0 +1,72 @@
+Taking input from /Users/Imperssonator/CC/Tofet/examples/GSL_randomGenerator/AFMSims/P3HTtof.sim, /Users/Imperssonator/Documents/MATLAB/Timberline_Delta/Tofet Files/15%_2min/15%_2min_1000 1000_50/15%_2min_1000 1000_50.xyz, /Users/Imperssonator/Documents/MATLAB/Timberline_Delta/Tofet Files/15%_2min/15%_2min_1000 1000_50/15%_2min_1000 1000_50.edge ...
+Read simulation parameters ...
+  : reorg 0.1
+  : temp 300.0
+  : fieldZ -1.6e-4
+  : hoppers 5
+  : maxTime 2e-9
+  : deltaTime 1e-15	
+  : alpha 1.5		
+  : tol 1e-4		
+  : maxRuns 1000
+  : #verbosity high
+  : 
+  : 
+Setting up GSL random number generator...
+	Generator type: mt19937
+	Seed = 0
+Read in 15923 vertices from /Users/Imperssonator/Documents/MATLAB/Timberline_Delta/Tofet Files/15%_2min/15%_2min_1000 1000_50/15%_2min_1000 1000_50.xyz
+Read in 31224 edges from /Users/Imperssonator/Documents/MATLAB/Timberline_Delta/Tofet Files/15%_2min/15%_2min_1000 1000_50/15%_2min_1000 1000_50.edge
+All systems go!  Beginning KMC...
+.................................
+.................................
+!!! WARNING !!! : Mobility not converged, maxTime exceeded.
+!!! WARNING !!! : Mobility not converged, maxTime exceeded.
+!!! WARNING !!! : Mobility not converged, maxTime exceeded.
+!!! WARNING !!! : Mobility not converged, maxTime exceeded.
+!!! WARNING !!! : Mobility not converged, maxTime exceeded.
+Mobility converged
+Simulation finished with 5 warnings
+.................................
+.................................
+> PHOTOCURRENT TRANSIENT
+	time (s)	-	current (A)
+	1e-15		2.05264e-05
+	1.5e-15		-2.57868e-06
+	2.25e-15		1.89328e-05
+	3.375e-15		6.7898e-06
+	5.0625e-15		2.84697e-07
+	7.59375e-15		3.15633e-06
+	1.13906e-14		4.71854e-06
+	1.70859e-14		-2.40659e-06
+	2.56289e-14		1.78275e-06
+	3.84434e-14		-6.72554e-07
+	5.7665e-14		2.51623e-06
+	8.64976e-14		2.5541e-06
+	1.29746e-13		4.22542e-07
+	1.9462e-13		1.17459e-06
+	2.91929e-13		5.44173e-07
+	4.37894e-13		-1.19423e-07
+	6.56841e-13		1.98999e-07
+	9.85261e-13		3.16226e-07
+	1.47789e-12		-7.41118e-08
+	2.21684e-12		4.75213e-08
+	3.32526e-12		1.00741e-07
+	4.98789e-12		6.92642e-08
+	7.48183e-12		-1.82693e-08
+	1.12227e-11		3.79905e-08
+	1.68341e-11		3.18531e-08
+	2.52512e-11		-2.62572e-08
+	3.78768e-11		1.46971e-08
+	5.68151e-11		2.70411e-09
+	8.52227e-11		8.03946e-09
+	1.27834e-10		7.92448e-09
+	1.91751e-10		5.56036e-09
+	2.87627e-10		2.99822e-09
+	4.3144e-10		1.02423e-10
+	6.4716e-10		-3.51025e-10
+> TOTAL RUNS = 5
+> MOBILITY FROM COLLECTION TIMES (cm^2/V.s)= 1.37973
+> MOBILITY FROM TOTAL DISPLACEMENT AND TOTAL TIME (cm^2/V.s)= 0.0880694
+> AVERAGE NUMBER OF HOPPERS COLLECTED PER RUN = 2.6
+> PROBABILITY OF HOPPER BEING COLLECTED DURING RUN = 0.52

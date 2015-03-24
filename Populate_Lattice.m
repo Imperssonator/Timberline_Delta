@@ -1,4 +1,4 @@
-function [XYZ, Edge] = Populate_Lattice(MS,pw,ph,lsx,lsy)
+function [XYZ, Edge] = Populate_Lattice(MS,pw,ph,lsx,lsy,lsa)
 
 %% Populate Lattice
 % This function takes a binned 2-D microstructure MS, where each pixel in a
@@ -21,6 +21,8 @@ Backbone = 1; % These will be used to denote the type of bond between each site
 PiStack = 2;
 Amor = 3;
 
+StartPos = min(lsx,lsy)/100; % We can't populate the point (0,0) because it causes all sorts of glitches
+
 %% Find Frame Edges
 
 [Ih Iw] = size(MS(:,:,1)); % image height and width in pixels
@@ -38,27 +40,38 @@ Edge = [];
 
 bins = size(MS,3);
 
-for bin = 1:bins-1
+for bin = 1:bins
     MSbin = MS(:,:,bin); % Generate the microstructure for this bin
-    BinAngle = MSbin(find(MSbin,1))/180*pi; % The bin angle is stored at every pixel, so just find the first one
+    if bin == bins % Change parameters for amorphous crap
+        disp('AMORPHOUS')
+        lsx = lsa; lsy = lsa;
+        LatticeWidth = nmw;
+        Backbone = Amor; PiStack = Amor;
+        BinAngle = 0;
+    else
+        BinAngle = MSbin(find(MSbin,1))/180*pi; % The bin angle is stored at every pixel, so just find the first one
+    end
     if isempty(BinAngle)
-        break
+        continue
     end
     
     %% Compute Scaling and Shifting Parameters
-    if BinAngle<=0
-        Diag = (nmw^2+nmh^2)^(1/2); % Image diagonal
-        LatticeWidth = Diag*cos(BinAngle+pi/4); % How wide of a square at angle BinAngle do we need to fully circumscribe the image
-        ShiftVector = nmw*sin(-BinAngle).*[cos(BinAngle+pi/2) sin(BinAngle+pi/2)];
-    else
-        Diag = (nmw^2+nmh^2)^(1/2);
-        LatticeWidth = Diag*cos(pi/4-BinAngle); % How wide of a square at angle BinAngle do we need to fully circumscribe the image
-        ShiftVector = -nmh*sin(BinAngle).*[cos(BinAngle) sin(BinAngle)];
+    if bin~=bins
+        
+        if BinAngle<=0
+            Diag = (nmw^2+nmh^2)^(1/2); % Image diagonal
+            LatticeWidth = Diag*cos(BinAngle+pi/4); % How wide of a square at angle BinAngle do we need to fully circumscribe the image
+            ShiftVector = nmw*sin(-BinAngle).*[cos(BinAngle+pi/2) sin(BinAngle+pi/2)];
+        else
+            Diag = (nmw^2+nmh^2)^(1/2);
+            LatticeWidth = Diag*cos(pi/4-BinAngle); % How wide of a square at angle BinAngle do we need to fully circumscribe the image
+            ShiftVector = -nmh*sin(BinAngle).*[cos(BinAngle) sin(BinAngle)];
+        end
     end
     
     %% Make a mesh grid
     disp('Making Grid')
-    [FiberGrid ChainGrid] = ndgrid(0:lsy:LatticeWidth,0:-lsx:-LatticeWidth); % The "Y" axis in this case is the fiber axis and starts off as the real space x-axis
+    [FiberGrid ChainGrid] = ndgrid(StartPos:lsy:LatticeWidth,-StartPos:-lsx:-LatticeWidth); % The "Y" axis in this case is the fiber axis and starts off as the real space x-axis
     
     disp('Populating Edges')
     [NumChains ChainLen] = size(FiberGrid);
@@ -69,15 +82,15 @@ for bin = 1:bins-1
     EdgeCount = 1;
     for m = 0:ChainLen-2
         for c = 1:NumChains-1
-            EdgeBin(EdgeCount,:) = [m*NumChains+c m*NumChains+c+1 PiStack]; % Fill in Pi-Stack bonds
+            EdgeBin(EdgeCount,:) = [m*NumChains+c m*NumChains+c+1 PiStack];     % Fill in Pi-Stack bonds
             EdgeCount = EdgeCount+1;
             
-            EdgeBin(EdgeCount,:) = [m*NumChains+c (m+1)*NumChains+c Backbone]; % Fill in Backbone bonds
+            EdgeBin(EdgeCount,:) = [m*NumChains+c (m+1)*NumChains+c Backbone];  % Fill in Backbone bonds
             EdgeCount = EdgeCount+1;
         end
     end
     for m = 1:ChainLen-1
-        EdgeBin(EdgeCount,:) = [m*NumChains (m+1)*NumChains Backbone]; % Last row of backbones
+        EdgeBin(EdgeCount,:) = [m*NumChains (m+1)*NumChains Backbone];          % Last row of backbones
         EdgeCount = EdgeCount+1;
     end
     for c = 1:NumChains-1
@@ -88,16 +101,24 @@ for bin = 1:bins-1
     EdgeBin(EdgeBin(:,1)<=0,:)=[]; % Clean it up
     
     %% Rotate and cut the lattice
-    disp('Rotating Grid')
-    RotGridPts = Rotate_List(GridPts,BinAngle);
-    disp('Shifting Grid')
-    ShiftedGP = RotGridPts + repmat(ShiftVector,[size(RotGridPts,1) 1]);
-    ShiftedGP = [ShiftedGP (1:size(ShiftedGP,1))'];
-    disp('Cutting Grid')
-    ShiftedGP(ShiftedGP(:,1)>nmw,:)=[];
-    ShiftedGP(ShiftedGP(:,1)<0,:)=[];
-    ShiftedGP(ShiftedGP(:,2)>0,:)=[];
-    ShiftedGP(ShiftedGP(:,2)<-nmh,:)=[];
+    if bin~=bins
+        disp('Rotating Grid')
+        RotGridPts = Rotate_List(GridPts,BinAngle);
+        disp('Shifting Grid')
+        ShiftedGP = RotGridPts + repmat(ShiftVector,[size(RotGridPts,1) 1]);
+        ShiftedGP = [ShiftedGP (1:size(ShiftedGP,1))'];
+        disp('Cutting Grid')
+        ShiftedGP(ShiftedGP(:,1)>nmw,:)=[];
+        ShiftedGP(ShiftedGP(:,1)<0,:)=[];
+        ShiftedGP(ShiftedGP(:,2)>0,:)=[];
+        ShiftedGP(ShiftedGP(:,2)<-nmh,:)=[];
+    else
+        ShiftedGP = [GridPts (1:size(GridPts,1))'];
+    end
+%     if BinAngle == 0
+%         RemoveZero = find(ShiftedGP(:,1)==0 & ShiftedGP(:,2)==0);
+%         ShiftedGP(RemoveZero,:) = [];
+%     end
     
     %% For every point on the lattice, keep it if it's in this bin's domain
     disp('Filling Domains')
@@ -111,8 +132,8 @@ for bin = 1:bins-1
     ShiftedGP(ShiftedGP(:,1)<0,:)=[];
     
     disp('Fixing Edges')
-    NumEd = size(EdgeBin,1); % Original number of edges
-    NumPtsNew = size(ShiftedGP,1); % Number of Points after cutting and filling
+    NumEd = size(EdgeBin,1);        % Original number of edges
+    NumPtsNew = size(ShiftedGP,1);  % Number of Points after cutting and filling
 %     FixedEdge = zeros(size(EdgeBin)); % A list to rebuild the edges now that points are gone
 %     EdCount = 1; % Keep track of how many have been added
     PtShift = zeros(NumPtsOrig,1);  % A handy list to show where original grid points ended up
@@ -136,13 +157,28 @@ for bin = 1:bins-1
 %     
 %     figure
 %     plot(ShiftedGP(:,1),ShiftedGP(:,2),'.b')
-    XYZ = [XYZ; ShiftedGP];
+    ExistingPts = length(XYZ);
+    FinalPtList = [ShiftedGP zeros(NumPtsNew,1)+bin]; % Add a designator for which bin the pt came from
+    XYZ = [XYZ; FinalPtList(:,[1 2 4])];
+    EdgeBin(:,1:2) = EdgeBin(:,1:2)+ExistingPts;
     Edge = [Edge; EdgeBin];
 end
 
-figure
-plot(XYZ(:,1),XYZ(:,2),'.b')
-axis equal
+%% Fill in inter-grain edges
+% This section of code will add the edges between grains. This will involve
+% constructing a nearest-neighbor list.........
+
+% NNBoxWidth = 0.8;  % Width of box to search for nearest neighbors.. >2*lattice spacing
+% MaxEdgeDist = 0.4; % maximum edge length that we will allow
+% MinEdgeDist = 0.3;
+% 
+% disp(size(XYZ))
+% [XYZ, Edge] = FindNN(XYZ,Edge,NNBoxWidth,MaxEdgeDist,MinEdgeDist);
+
+
+%% Plot the points
+
+LatPlot(XYZ,bins)
 
 end
 

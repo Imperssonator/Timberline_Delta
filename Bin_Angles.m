@@ -1,4 +1,4 @@
-function MS = Bin_Angles(Segpath,bins)
+function [Binfile, MS] = Bin_Angles(Segpath,bins)
 %% Bin Angles
 % will create an (image size) x # of microstates 3D binary matrix
 % Each matrix will have 1's where that microstate exists
@@ -22,6 +22,10 @@ end
 
 MS = MS.*repmat(MAXCONF~=0,[1 1 bins+1]);
 MS(:,:,bins+1) = MAXCONF==0;
+
+Binfile = [Segpath(1:end-4), '_Bin'];
+
+save(Binfile,'MS','-v7.3')
 
 end
     
