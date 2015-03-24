@@ -6,7 +6,6 @@ function out = stackplot(Stack)
 
 for i = 1:length(Stack)
     plot([i,i],[Stack(i,1),Stack(i,2)],'-b')
-    hold on
 end
 
 end

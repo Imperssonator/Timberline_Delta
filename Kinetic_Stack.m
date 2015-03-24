@@ -15,34 +15,22 @@ global DPs T kb
 T = 298;
 kb = 1.38E-23;
 DPs = DPdist;
-% pi_length = 1500;           % how many chains will we stack
+pi_length = 300;           % how many chains will we stack
 
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
 [n m] = size(Stack);
 
-L= [];
-count = 0;
-
-while count<5
+while n<pi_length
     if n>1
-        Rates = get_rates(Stack,n) % Rates is [nx1]
+        Rates = get_rates(Stack); % Rates is [nx1]
         Cuts = make_bins(Rates); % cuts is also [nx1] ranging from 0 to 1
         process = choose_process(rand,Cuts);
         Stack = perform_process(Stack,process);
-        L = [L;(length(Stack))];
-        disp(L(end))
-        if length(L)-5>0
-            diff = L(end)-L(end-5);
-            if abs(diff)<2
-                count = count+1;
-            else
-                count = 0;
-            end
-        end
+        disp(length(Stack))
     else
         Stack=initiate(Stack);
     end
-    [n, m] = size(Stack);
+    [n m] = size(Stack);
 end
 
 out = Stack;
@@ -140,9 +128,7 @@ end
 
 function out = pick_pol()
 global DPs
-out = DPs(discr
-
-etesample(DPs(:,3),1),1);
+out = DPs(discretesample(DPs(:,3),1),1);
 end
 
 function out = det_front(Stack)
@@ -155,7 +141,7 @@ end
 
 %% RATES
 % Everything involved with getting rates is in this section
-function out = get_rates(Stack,n)
+function out = get_rates(Stack)
 % 1: add front
 % 2: add back
 % 3: detach front
@@ -164,41 +150,41 @@ function out = get_rates(Stack,n)
 processes = 4;
 out = zeros(processes,1);
 
-out(1) = add_front_rate(Stack,n);
-out(2) = add_back_rate(Stack,n);
-out(3) = det_front_rate(Stack,n);
-out(4) = det_back_rate(Stack,n);
+out(1) = add_front_rate(Stack);
+out(2) = add_back_rate(Stack);
+out(3) = det_front_rate(Stack);
+out(4) = det_back_rate(Stack);
 
 end
 
-function out = add_front_rate(Stack,n)
-k = n*exp(-n/100);
+function out = add_front_rate(Stack)
+k = 1;
 out = k;
 end
 
-function out = add_back_rate(Stack,n)
-k = n*exp(-n/100);
+function out = add_back_rate(Stack)
+k = 1;
 out = k;
 end
 
-function out = det_front_rate(Stack,n)
+function out = det_front_rate(Stack)
 global T kb
-d0 = intrinsic_detach(n);
+d0 = intrinsic_detach();
 [overlap,OV] = find_overlap(Stack,length(Stack),length(Stack)-1);
 Eov = overlap_E();
 out = d0*exp(-overlap*Eov/(kb*T));
 end
 
-function out = det_back_rate(Stack,n)
+function out = det_back_rate(Stack)
 global T kb
-d0 = intrinsic_detach(n);
+d0 = intrinsic_detach();
 [overlap,OV] = find_overlap(Stack,1,2);
 Eov = overlap_E();
 out = d0*exp(-overlap*Eov/(kb*T));
 end
 
-function out = intrinsic_detach(n)
-out = 8E11*exp(n/100);
+function out = intrinsic_detach()
+out = 8E11;
 end
 
 function out = overlap_E()
