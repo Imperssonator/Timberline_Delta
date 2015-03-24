@@ -15,7 +15,7 @@ global DPs T kb
 T = 298;
 kb = 1.38E-23;
 DPs = DPdist;
-pi_length = 300;           % how many chains will we stack
+pi_length = 1000;           % how many chains will we stack
 
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
 [n m] = size(Stack);
@@ -34,6 +34,8 @@ while n<pi_length
 end
 
 out = Stack;
+figure
+hold on
 stackplot(Stack)
 
 end
