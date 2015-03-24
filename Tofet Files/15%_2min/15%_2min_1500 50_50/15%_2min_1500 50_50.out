@@ -1,0 +1,14 @@
+Taking input from /Users/Imperssonator/CC/Tofet/examples/GSL_randomGenerator/AFMSims/P3HTtof.sim, /Users/Imperssonator/Documents/MATLAB/Timberline_Delta/Tofet Files/15%_2min/15%_2min_1500 50_50/15%_2min_1500 50_50.xyz, /Users/Imperssonator/Documents/MATLAB/Timberline_Delta/Tofet Files/15%_2min/15%_2min_1500 50_50/15%_2min_1500 50_50.edge ...
+Read simulation parameters ...
+  : reorg 0.1
+  : temp 300.0
+  : fieldZ -1.6e-4
+  : hoppers 5
+  : maxTime 2e-9
+  : deltaTime 1e-15	
+  : alpha 1.5		
+  : tol 1e-4		
+  : maxRuns 1000
+  : #verbosity high
+  : 
+  : 

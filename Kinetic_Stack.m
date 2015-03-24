@@ -11,11 +11,14 @@ function out = Kinetic_Stack(DPdist)
 % and assumes the chains follow a normal distribution, which is usually not
 % the case
 
+%% Hard Coded Parameters
 global DPs T kb DPdist1
 DPdist1 = DPdist;
 T = 298;
 kb = 1.38E-23;
 DPs = tabulate(DPdist1);
+EqLen = 10;                % Number of iterations stack can go without changing length to be considered 'equilibrated'
+EqTime = 75;
 % pi_length = 300;           % how many chains will we stack
 
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
@@ -25,8 +28,10 @@ DPdist1(x(discretesample(x,1))) = [];
 DPs = tabulate(DPdist1);
 count = 0;
 L = [];
+iter = 0;
 
-while count<50
+while iter<100000 %count<EqTime
+    iter = iter+1;
     if n>1
         Rates = get_rates(Stack); % Rates is [nx1]
         Cuts = make_bins(Rates); % cuts is also [nx1] ranging from 0 to 1
@@ -35,8 +40,8 @@ while count<50
         disp(length(Stack))
         L = [L;(length(Stack))];
         disp(count)
-        if length(L)-5>0
-            diff = L(end)-L(end-5);
+        if length(L)>EqLen
+            diff = L(end)-L(end-EqLen);
             if abs(diff)<2
                 count = count+1;
             else
@@ -49,8 +54,13 @@ while count<50
     [n m] = size(Stack);
 end
 
+figure
+plot((1:length(L))',L,'-b')
+
 out = Stack;
+figure
 stackplot(Stack)
+
 
 end
 
@@ -210,7 +220,7 @@ out = 8E11;
 end
 
 function out = overlap_E()
-out = 1.2E-21;
+out = 1.22E-21;
 end
 
 
