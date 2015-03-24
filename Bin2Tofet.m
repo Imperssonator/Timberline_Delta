@@ -49,8 +49,8 @@ xyz = ['''' AD '/' XYZFile ''' '];
 edge = ['''' AD '/' EdgeFile ''' '];
 out = ['''' AD '/' SizeDir SizeName '.out'''];
 
-
-command = [tft sim xyz edge '> ' out];
-system(command)
+% 
+% command = [tft sim xyz edge '> ' out];
+% system(command)
 
 end
