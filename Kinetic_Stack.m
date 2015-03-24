@@ -11,22 +11,38 @@ function out = Kinetic_Stack(DPdist)
 % and assumes the chains follow a normal distribution, which is usually not
 % the case
 
-global DPs T kb
+global DPs T kb DPdist1
+DPdist1 = DPdist;
 T = 298;
 kb = 1.38E-23;
-DPs = DPdist;
-pi_length = 300;           % how many chains will we stack
+DPs = tabulate(DPdist1);
+% pi_length = 300;           % how many chains will we stack
 
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
 [n m] = size(Stack);
+x = find(DPdist1==Stack(2)+1);
+DPdist1(x(discretesample(x,1))) = [];
+DPs = tabulate(DPdist1);
+count = 0;
+L = [];
 
-while n<pi_length
+while count<50
     if n>1
         Rates = get_rates(Stack); % Rates is [nx1]
         Cuts = make_bins(Rates); % cuts is also [nx1] ranging from 0 to 1
         process = choose_process(rand,Cuts);
         Stack = perform_process(Stack,process);
         disp(length(Stack))
+        L = [L;(length(Stack))];
+        disp(count)
+        if length(L)-5>0
+            diff = L(end)-L(end-5);
+            if abs(diff)<2
+                count = count+1;
+            else
+                count = 0;
+            end
+        end     
     else
         Stack=initiate(Stack);
     end
@@ -95,16 +111,18 @@ end
 
 function out = add_front(Stack)
 
+global DPs 
 new_chain = collide(Stack,length(Stack),length(Stack)-1);
 out = [Stack; new_chain];
-
+DPs = redefine_add(new_chain);
 end
 
-function out = add_back(Stack)
+function out = add_back(Stack,DPdist)
 
+global DPs
 new_chain = collide(Stack,1,2);
 out = [new_chain;Stack];
-
+DPs = redefine_add(new_chain);
 end
 
 function out = collide(Stack,front,support)
@@ -132,11 +150,15 @@ out = DPs(discretesample(DPs(:,3),1),1);
 end
 
 function out = det_front(Stack)
+global DPs
 out = Stack(1:end-1,:);
+DPs = redefine_det(Stack(end,:));
 end
 
 function out = det_back(Stack)
+global DPs
 out = Stack(2:end,:);
+DPs = redefine_det(Stack(1,:));
 end
 
 %% RATES
@@ -196,5 +218,20 @@ function [overlap_length,overlap_vector] = find_overlap(Stack,i,j)
 
 overlap_vector = [max(Stack(i,1),Stack(j,1)), min(Stack(i,2),Stack(j,2))]; % find overlap of previous two chains
 overlap_length = overlap_vector(2)-overlap_vector(1)+1;
+
+end
+
+function DPs = redefine_add(new_chain)
+global DPdist1
+x = find(DPdist1==new_chain(2)-new_chain(1)+1);
+DPdist1(x(discretesample(x,1))) = [];
+DPs = tabulate(DPdist1);
+
+end
+
+function DPs = redefine_det(det_chain)
+global DPdist1
+DPdist1 = [DPdist1; det_chain(2)-det_chain(1)+1];
+DPs = tabulate(DPdist1);
 
 end
