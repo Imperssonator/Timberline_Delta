@@ -4,9 +4,9 @@ function out = stackplot(Stack)
 % This function takes a pi stack matrix [start end] Nx2 and plots it as evenly
 % spaced line segments
 
-for i = 1:length(Stack)
+for i = 1:size(Stack,1)
     plot([i,i],[Stack(i,1),Stack(i,2)],'-b')
-    hold on
+%     hold on
 end
 
 end

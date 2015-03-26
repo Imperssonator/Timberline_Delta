@@ -1,5 +1,5 @@
 function out = Kinetic_Stack(DPdist)
-
+close all
 %% Stackemup
 % This function takes a degree of polymerization distribution as an input, in the form of an Nx2
 % matrix:
@@ -22,15 +22,15 @@ EqTime = 75;
 % pi_length = 300;           % how many chains will we stack
 
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
-[n m] = size(Stack);
+[n , ~] = size(Stack);
 x = find(DPdist1==Stack(2)+1);
 DPdist1(x(discretesample(x,1))) = [];
 DPs = tabulate(DPdist1);
 count = 0;
-L = [];
+L = ones(1000,1);
 iter = 0;
 
-while iter<100000 %count<EqTime
+while iter<1000 %count<EqTime
     iter = iter+1;
     if n>1
         Rates = get_rates(Stack); % Rates is [nx1]
@@ -38,8 +38,8 @@ while iter<100000 %count<EqTime
         process = choose_process(rand,Cuts);
         Stack = perform_process(Stack,process);
         disp(length(Stack))
-        L = [L;(length(Stack))];
-        disp(count)
+        L(iter) = length(Stack);
+%         disp(count)
         if length(L)>EqLen
             diff = L(end)-L(end-EqLen);
             if abs(diff)<2
@@ -50,16 +50,19 @@ while iter<100000 %count<EqTime
         end     
     else
         Stack=initiate(Stack);
+        L(iter) = 1;
     end
-    [n m] = size(Stack);
+    [n , ~] = size(Stack);
+    figure(1)
+    hold on
+    stackplot(Stack)
+    drawnow
 end
 
 figure
 plot((1:length(L))',L,'-b')
-
 out = Stack;
-figure
-stackplot(Stack)
+
 
 
 end
@@ -127,7 +130,7 @@ out = [Stack; new_chain];
 DPs = redefine_add(new_chain);
 end
 
-function out = add_back(Stack,DPdist)
+function out = add_back(Stack)
 
 global DPs
 new_chain = collide(Stack,1,2);
@@ -220,7 +223,7 @@ out = 8E11;
 end
 
 function out = overlap_E()
-out = 1.22E-21;
+out = 1.23E-21;
 end
 
 
