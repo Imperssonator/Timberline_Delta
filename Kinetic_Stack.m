@@ -1,5 +1,6 @@
 function out = Kinetic_Stack(DPdist)
 close all
+clc
 %% Stackemup
 % This function takes a degree of polymerization distribution as an input, in the form of an Nx2
 % matrix:
@@ -27,10 +28,10 @@ x = find(DPdist1==Stack(2)+1);
 DPdist1(x(discretesample(x,1))) = [];
 DPs = tabulate(DPdist1);
 count = 0;
-L = ones(1000,1);
+L = ones(100000,1);
 iter = 0;
 
-while iter<1000 %count<EqTime
+while iter<100000 %count<EqTime
     iter = iter+1;
     if n>1
         Rates = get_rates(Stack); % Rates is [nx1]
@@ -53,13 +54,16 @@ while iter<1000 %count<EqTime
         L(iter) = 1;
     end
     [n , ~] = size(Stack);
-    figure(1)
-    hold on
-    stackplot(Stack)
-    drawnow
+    
+    if mod(iter,10000) == 0
+        figure(1)
+        hold on
+        stackplot(Stack,iter)
+        drawnow
+    end
 end
 
-figure
+figure(2)
 plot((1:length(L))',L,'-b')
 out = Stack;
 
