@@ -2,6 +2,9 @@
 function [out, UsedChains] = Kinetic_Stack(DPdist)
 =======
 function out = Kinetic_Stack(DPdist)
+<<<<<<< HEAD
+>>>>>>> origin/master
+=======
 >>>>>>> origin/master
 close all
 clc
@@ -31,6 +34,9 @@ Iterations = 100000;
 Stack = [0 DPSample()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
 =======
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
+<<<<<<< HEAD
+>>>>>>> origin/master
+=======
 >>>>>>> origin/master
 [n , ~] = size(Stack);
 x = find(DPdist1==Stack(2)+1);
@@ -38,7 +44,11 @@ DPdist1(x(discretesample(x,1))) = [];
 DPs = tabulate(DPdist1);
 count = 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
 L = ones(Iterations,1);
+=======
+L = ones(100000,1);
+>>>>>>> origin/master
 =======
 L = ones(100000,1);
 >>>>>>> origin/master
@@ -70,6 +80,7 @@ while iter<Iterations %count<EqTime
     
     if mod(iter,10000) == 0
 <<<<<<< HEAD
+<<<<<<< HEAD
 %         figure(1)
 %         hold on
 %         stackplot(Stack,iter)
@@ -96,6 +107,16 @@ figure
 bar(UsedChains(:,1),UsedChains(:,2))
 
 figure
+=======
+        figure(1)
+        hold on
+        stackplot(Stack,iter)
+        drawnow
+    end
+end
+
+figure(2)
+>>>>>>> origin/master
 =======
         figure(1)
         hold on
