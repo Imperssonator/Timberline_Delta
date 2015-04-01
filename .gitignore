@@ -1,0 +1,13 @@
+*.mat
+*.tif
+*.png
+*.fig
+*.jpeg
+*.jpg
+
+# Tofet Files
+*.xyz
+*.edge
+*.occ
+*.out
+

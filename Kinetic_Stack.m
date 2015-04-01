@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+function [out, UsedChains] = Kinetic_Stack(DPdist)
+=======
 function out = Kinetic_Stack(DPdist)
-
+>>>>>>> origin/master
+close all
+clc
 %% Stackemup
 % This function takes a degree of polymerization distribution as an input, in the form of an Nx2
 % matrix:
@@ -19,18 +24,27 @@ kb = 1.38E-23;
 DPs = tabulate(DPdist1);
 EqLen = 10;                % Number of iterations stack can go without changing length to be considered 'equilibrated'
 EqTime = 75;
+Iterations = 100000;
 % pi_length = 300;           % how many chains will we stack
 
+<<<<<<< HEAD
+Stack = [0 DPSample()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
+=======
 Stack = [0 pick_pol()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
-[n m] = size(Stack);
+>>>>>>> origin/master
+[n , ~] = size(Stack);
 x = find(DPdist1==Stack(2)+1);
 DPdist1(x(discretesample(x,1))) = [];
 DPs = tabulate(DPdist1);
 count = 0;
-L = [];
+<<<<<<< HEAD
+L = ones(Iterations,1);
+=======
+L = ones(100000,1);
+>>>>>>> origin/master
 iter = 0;
 
-while iter<100000 %count<EqTime
+while iter<Iterations %count<EqTime
     iter = iter+1;
     if n>1
         Rates = get_rates(Stack); % Rates is [nx1]
@@ -38,8 +52,8 @@ while iter<100000 %count<EqTime
         process = choose_process(rand,Cuts);
         Stack = perform_process(Stack,process);
         disp(length(Stack))
-        L = [L;(length(Stack))];
-        disp(count)
+        L(iter) = length(Stack);
+%         disp(count)
         if length(L)>EqLen
             diff = L(end)-L(end-EqLen);
             if abs(diff)<2
@@ -50,16 +64,51 @@ while iter<100000 %count<EqTime
         end     
     else
         Stack=initiate(Stack);
+        L(iter) = 1;
     end
-    [n m] = size(Stack);
+    [n , ~] = size(Stack);
+    
+    if mod(iter,10000) == 0
+<<<<<<< HEAD
+%         figure(1)
+%         hold on
+%         stackplot(Stack,iter)
+%         drawnow
+        
+%         figure
+%         hist(DPdist1,20);           % Histogram of remaining free chains
+        
+    end
 end
 
-figure
-plot((1:length(L))',L,'-b')
+StartDist = tabulate(DPdist);
+First = StartDist(1,1); Last = StartDist(end,1);
+EndDist = tabulate(DPdist1);
+InnerFirst = EndDist(1,1); InnerLast = EndDist(end,1);
+Prefix = (First:InnerFirst-1)';
+Suffix = (InnerLast+1:Last)';
+Prefix = [Prefix, zeros(size(Prefix,1),2)];
+Suffix = [Suffix, zeros(size(Suffix,1),2)];
+EndDist = [Prefix; EndDist; Suffix];                % Add zeros for the lengths that were totally depleted in the simulation
 
-out = Stack;
+UsedChains = [StartDist(:,1), StartDist(:,2:3)-EndDist(:,2:3)];
 figure
-stackplot(Stack)
+bar(UsedChains(:,1),UsedChains(:,2))
+
+figure
+=======
+        figure(1)
+        hold on
+        stackplot(Stack,iter)
+        drawnow
+    end
+end
+
+figure(2)
+>>>>>>> origin/master
+plot((1:length(L))',L,'-b')
+out = Stack;
+
 
 
 end
@@ -68,7 +117,7 @@ function out = initiate(Stack)
 %% Initiate
 % Add a chain if there is only 1
 
-DP = pick_pol();
+DP = DPSample();
 OV = Stack(1,:);
 
 hitstack = randi(OV(2)-OV(1)+1)+OV(1)-1; % where does new chain hit stack
@@ -121,18 +170,16 @@ end
 
 function out = add_front(Stack)
 
-global DPs 
 new_chain = collide(Stack,length(Stack),length(Stack)-1);
 out = [Stack; new_chain];
-DPs = redefine_add(new_chain);
+
 end
 
-function out = add_back(Stack,DPdist)
+function out = add_back(Stack)
 
-global DPs
 new_chain = collide(Stack,1,2);
 out = [new_chain;Stack];
-DPs = redefine_add(new_chain);
+
 end
 
 function out = collide(Stack,front,support)
@@ -144,7 +191,7 @@ function out = collide(Stack,front,support)
 
 % the output is a 1x2 vector
 
-DP = pick_pol();
+DP = DPSample();
 [OL,OV] = find_overlap(Stack,front,support); % find overlap of previous two chains
 
 hitstack = randi(OV(2)-OV(1)+1)+OV(1)-1; % where does new chain hit stack
@@ -154,21 +201,23 @@ out = [hitstack-hitchain+1, hitstack+DP-hitchain];
 
 end
 
-function out = pick_pol()
-global DPs
-out = DPs(discretesample(DPs(:,3),1),1);
-end
+% function out = pick_pol()
+% global DPs
+% out = DPs(discretesample(DPs(:,3),1),1);
+% end
 
 function out = det_front(Stack)
-global DPs
+
+redefine_det(Stack(end,:));
 out = Stack(1:end-1,:);
-DPs = redefine_det(Stack(end,:));
+
 end
 
 function out = det_back(Stack)
-global DPs
+
+redefine_det(Stack(1,:));
 out = Stack(2:end,:);
-DPs = redefine_det(Stack(1,:));
+
 end
 
 %% RATES
@@ -220,7 +269,7 @@ out = 8E11;
 end
 
 function out = overlap_E()
-out = 1.22E-21;
+out = 1.23E-21;
 end
 
 
@@ -231,17 +280,29 @@ overlap_length = overlap_vector(2)-overlap_vector(1)+1;
 
 end
 
-function DPs = redefine_add(new_chain)
+% function DPs = redefine_add(new_chain)
+% global DPdist1
+% x = find(DPdist1==new_chain(2)-new_chain(1)+1);
+% DPdist1(x(discretesample(x,1))) = [];
+% DPs = tabulate(DPdist1);
+% 
+% end
+
+%% Distribution Changes
+
+function DPs = redefine_det(det_chain)
+
 global DPdist1
-x = find(DPdist1==new_chain(2)-new_chain(1)+1);
-DPdist1(x(discretesample(x,1))) = [];
-DPs = tabulate(DPdist1);
+DPdist1 = [DPdist1; det_chain(2)-det_chain(1)+1];
 
 end
 
-function DPs = redefine_det(det_chain)
+function ChainLength = DPSample()
+
 global DPdist1
-DPdist1 = [DPdist1; det_chain(2)-det_chain(1)+1];
-DPs = tabulate(DPdist1);
+NumFreeChains = size(DPdist1,1);    % How many chains are solvated, total
+Which = randi(NumFreeChains,1);     % Pick one
+ChainLength = DPdist1(Which,1);     % Find its length
+DPdist1(Which,:) = [];              % Remove it from the distribution
 
 end
