@@ -86,6 +86,26 @@ figure
 bar(UsedChains(:,1),UsedChains(:,2))
 
 figure
+=======
+        figure(1)
+        hold on
+        stackplot(Stack,iter)
+        drawnow
+    end
+end
+
+figure(2)
+>>>>>>> origin/master
+=======
+        figure(1)
+        hold on
+        stackplot(Stack,iter)
+        drawnow
+    end
+end
+
+figure(2)
+>>>>>>> origin/master
 plot((1:length(L))',L,'-b')
 out = Stack;
 
