@@ -1,4 +1,4 @@
-function [out, UsedChains] = Kinetic_Stack(DPdist)
+function [out, L] = Kinetic_Stack(DPdist)
 
 clc
 %% Stackemup
@@ -12,15 +12,19 @@ global T kb DPdist1 Stack
 DPdist1 = DPdist;
 T = 298;
 kb = 1.38E-23;
-Iterations = 1000;
-
+Iterations = 5500;
+figure(4)
+hist(DPdist1,20)    % Histogram of initial distribution
 Stack = [0 DPSample()-1]; % stack is zero-indexed at the first monomer of the first chain to be picked
 
-L = ones(Iterations,1);
+L = zeros(Iterations,20);
 iter = 0;
 
 while iter<Iterations 
     iter = iter+1;
+    if isempty(DPdist1)
+        break
+    end
     if size(Stack,1)>1
         ProcessList = find_process();  % Number of possible processes is listed
         % 1 add chain to pi stack
@@ -33,27 +37,30 @@ while iter<Iterations
         Cuts = make_bins(Rates); % cuts is also [nx1] ranging from 0 to 1
         process = choose_process(rand,Cuts);
         Stack = perform_process(process, ProcessList);
+        for i = 1:size(Stack,3)
+            w = Stack(:,:,i);   
+            L(iter,i) = length(w(~all(w==0,2),:));  % Number of non-zero rows in the matrix w ie length of that layer of the stack
+        end
         disp(size(Stack,1))
-        L(iter) = length(Stack);
     else
         Stack = initiate();
     end
     
-%     figure(1)
-%     stackplot(Stack)
-    
+       
 %     if mod(iter,10000) == 0
 %         figure(1)
 %         hold on
 %         stackplot(Stack,iter)
 %         drawnow
         
-%         figure
-%         hist(DPdist1,20);           % Histogram of remaining free chains
-        
+       
 end
 out = Stack;
+L(:,size(Stack,3):end) = [];
 
+figure(1)
+stackplot(Stack)
+hold off
 
 StartDist = tabulate(DPdist);
 First = StartDist(1,1); Last = StartDist(end,1);
@@ -69,8 +76,13 @@ UsedChains = [StartDist(:,1), StartDist(:,2:3)-EndDist(:,2:3)];
 % figure
 % bar(UsedChains(:,1),UsedChains(:,2))
 % 
-figure(1)
-plot((1:length(L))',L,'-b')
+figure(2)
+plot(L)
+
+figure (3)
+hist(DPdist1,20);           % Histogram of remaining free chains
+hold off
+ 
 end
 
 function out = initiate()
@@ -111,25 +123,25 @@ if size(Stack,3) == 1
 else
     if FirstLayer ~= 1
         if FirstLayer ~= size(Stack,3)
-            if isempty(Stack(1,:,FirstLayer-1)) == 1 & isempty(Stack(1,:,FirstLayer+1)) == 1
+            if Stack(1,:,FirstLayer-1) == [0 0] & Stack(1,:,FirstLayer+1) == [0 0]
                 out(2,2) = out(2,2)+1;
             end
-            if isempty(Stack(size(Stack,1),:,FirstLayer-1)) == 1 & isempty(Stack(size(Stack,1),:,FirstLayer+1)) == 1
+            if Stack(size(Stack,1),:,FirstLayer-1) == [0 0] & Stack(size(Stack,1),:,FirstLayer+1) == [0 0]
                 out(2,2) = out(2,2)+1;
             end
         else
-            if isempty(Stack(1,:,FirstLayer-1)) == 1 
+            if Stack(1,:,FirstLayer-1) == [0 0]
                 out(2,2) = out(2,2)+1;
             end
-            if isempty(Stack(size(Stack,1),:,FirstLayer-1)) == 1 
+            if Stack(size(Stack,1),:,FirstLayer-1) == [0 0] 
                 out(2,2) = out(2,2)+1;
             end
         end
     else
-        if isempty(Stack(1,:,FirstLayer+1)) == 1
+        if Stack(1,:,FirstLayer+1) == [0 0]
             out(2,2) = out(2,2)+1;
         end
-        if isempty(Stack(size(Stack,1),:,FirstLayer+1)) == 1
+        if Stack(size(Stack,1),:,FirstLayer+1) == [0 0]
             out(2,2) = out(2,2)+1;
         end
     end
@@ -340,7 +352,7 @@ function out = collide(layer,front,support)
 % pi stacking only
 
 DP = DPSample();
-[~,OV] = find_overlap(front,support,layer); % find overlap of previous two chains
+[~,OV] = find_overlap(front,support,layer,layer); % find overlap of previous two chains
 hitstack = randi((OV(2)-OV(1)+1))+OV(1)-1; % where does new chain hit stack
 hitchain = randi(DP);                    % which monomer of new chain hits stack
 
@@ -348,9 +360,9 @@ out = [hitstack-hitchain+1, hitstack+DP-hitchain];
 
 end
 
-function [overlap_length,overlap_vector] = find_overlap(i,j,layer)
+function [overlap_length,overlap_vector] = find_overlap(i,j,layer1,layer2)
 global Stack
-overlap_vector = [max(Stack(i,1,layer),Stack(j,1,layer)), min(Stack(i,2,layer),Stack(j,2,layer))]; % find overlap of previous two chains
+overlap_vector = [max(Stack(i,1,layer1),Stack(j,1,layer2)), min(Stack(i,2,layer1),Stack(j,2,layer2))]; % find overlap of previous two chains
 overlap_length = overlap_vector(2)-overlap_vector(1)+1;
 end
 
@@ -417,12 +429,22 @@ out = Stack;
 end
 
 function out = add_pialkyl(front_chain)
-global Stack
+global Stack FirstLayer
 new_chain = collide_pialkyl(front_chain);
+if front_chain(2)< FirstLayer
+     SupportLayer = front_chain(2)+1;
+else
+    SupportLayer = front_chain(2)-1;
+end
 if front_chain(3) == 1
     Stack(front_chain(1)-1,:,front_chain(2)) = new_chain;
+    [OL,OV] = find_overlap(front_chain(1)-1,front_chain(1)-1,front_chain(2),SupportLayer);
 else
     Stack(front_chain(1)+1,:,front_chain(2)) = new_chain;
+    [OL,OV] = find_overlap(front_chain(1)+1,front_chain(1)+1,front_chain(2),SupportLayer);
+end
+if OL<=0
+    Stack = add_pialkyl(front_chain);
 end
 out = Stack;
 end
@@ -452,12 +474,12 @@ function out = get_rates(ProcessList)
 out = zeros(length(ProcessList),1);
 
 % Rate constants for each of the processes
-k_addpi = 1;
-k_detpi = 0.8;
-k_addalkyl = 0.001;
-k_detalkyl = 1.5;
-k_addpialkyl = 1.2;
-k_detpialkyl = 1;
+k_addpi = 1.2;
+k_detpi = 1;
+k_addalkyl = 0.0001;
+k_detalkyl = 2;
+k_addpialkyl = 1.5;
+k_detpialkyl = 0.8;
 
 out(1) = k_addpi*ProcessList(1,2);
 out(2) = k_detpi*ProcessList(2,2);
